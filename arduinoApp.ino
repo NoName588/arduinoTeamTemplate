@@ -3,6 +3,8 @@
 #include "task3.h"
 #include "task4.h"
 
+buttonEvt_t buttonEvt = {false, BUTTONS::NONE};
+
 void setup()
 {
     task1();
