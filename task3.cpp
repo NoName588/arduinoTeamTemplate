@@ -26,8 +26,8 @@ void task3()
         MEDIUM,
         WAIT_ON,
         FAST,
-        PERMA_OFF,
-        PERMA_ON
+        OFF_LED,
+        ON_LED,
     };
 
     static TaskStates taskState = TaskStates::INIT;
@@ -59,7 +59,6 @@ void task3()
             pinMode(ledBlink, OUTPUT);
             digitalWrite(ledBlink, LOW);
             lasTime = millis();
-
             keyCounter = 0;
             taskState = TaskStates::SLOW;
             break;
@@ -100,8 +99,8 @@ void task3()
             if( (currentTime - lasTime) >= SlowInterval )
             {
                 digitalWrite(ledBlink, LOW);
-                taskState = TaskStates::PERMA_OFF;
-                printf("Change to Perma_OFF: %d\n");
+                taskState = TaskStates::OFF_LED;
+                printf("Change to OFF_LED: %d\n");
             }
             break;
         }
@@ -140,8 +139,8 @@ void task3()
             if( (currentTime - lasTime) >= MediumInterval )
             {
                 digitalWrite(ledBlink, HIGH);
-                taskState = TaskStates::PERMA_ON;
-                printf("Change to Perma_ON: %d\n");
+                taskState = TaskStates::ON_LED;
+                printf("Change to ON_LED: %d\n");
             }
             break;
         }
@@ -171,13 +170,13 @@ void task3()
                         {
                             digitalWrite(ledBlink, HIGH);
                             printf("Back to ON\n");
-                            taskState = TaskStates::PERMA_ON;
+                            taskState = TaskStates::ON_LED;
                         }
                         else if(switchState == false)
                         {
                             digitalWrite(ledBlink, LOW);
                             printf("Back to OFF\n");
-                            taskState = TaskStates::PERMA_OFF;
+                            taskState = TaskStates::OFF_LED;
                         }
                     }
                     else
@@ -189,8 +188,8 @@ void task3()
             break;
         }
 
-        //LED PERMA States
-        case TaskStates::PERMA_ON:
+        //LED ON/OFF INIFNITE
+        case TaskStates::ON_LED:
         {
             if(buttonEvt.trigger == true)
             {
@@ -212,7 +211,7 @@ void task3()
             break;
         }
 
-        case TaskStates::PERMA_OFF:
+        case TaskStates::OFF_LED:
         {
             if(buttonEvt.trigger == true)
             {
