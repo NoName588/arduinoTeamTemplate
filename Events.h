@@ -1,7 +1,7 @@
 #ifndef _EVENTS_H_
 #define _EVENTS_H_
 
-enum class BUTTONS{NONE, Boton1, Boton2};
+enum class BUTTONS{NONE, B1, B2};
 
 typedef struct{
     bool trigger;

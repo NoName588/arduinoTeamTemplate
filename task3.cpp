@@ -2,7 +2,7 @@
 #include "task3.h"
 #include "events.h"
 
-static bool compareKeys(BUTTONS *pKey, BUTTONS *pSecret)
+static bool compareKeys(BUTTONS *pSecret, BUTTONS *pKey)
 {
     bool correct = true;
     for (uint8_t i = 0; i < 5; i++)
@@ -12,230 +12,200 @@ static bool compareKeys(BUTTONS *pKey, BUTTONS *pSecret)
             break;
         }
     }
+
     return correct;
 }
 
 void task3()
 {
+
     enum class TaskStates
     {
         INIT,
-        //MOF States
-        SLOW,
-        WAIT_OFF,
-        MEDIUM,
-        WAIT_ON,
-        FAST,
-        OFF_LED,
-        ON_LED,
+        WAIT_CONFIG,
+        APAGADO,
+        ENCENDIDO,
+        LENTO,
+        MEDIO,
+        RAPIDO,
+
     };
-
     static TaskStates taskState = TaskStates::INIT;
-
-    const uint8_t ledBlink = 25;
-
+    const uint8_t led = 14;
     static uint32_t lasTime;
+    static constexpr uint32_t LentoINTERVAL = 1000;
+    static constexpr uint32_t MedioINTERVAL = 500;
+    static constexpr uint32_t RapidoINTERVAL = 125;
 
-    static bool ledStatus = false;
 
-    const uint32_t SlowInterval = 1000;
+    static BUTTONS SecretCodigoRapido[5] = {BUTTONS::B1, BUTTONS::B1,
+                                                    BUTTONS::B2, BUTTONS::B2,
+                                                    BUTTONS::B1};
 
-    const uint32_t MediumInterval = 500;
+    static BUTTONS RapidoKey[5] = {BUTTONS::NONE};
 
-    const uint32_t FastInterval = 250;
-    static bool switchState;
-
-    //Password Var
-    static BUTTONS secret[5] = {BUTTONS::B1, BUTTONS::B1, BUTTONS::B2, BUTTONS::B2, BUTTONS::B1};
-
-    static BUTTONS disarmKey[5] = {BUTTONS::NONE};
-    static uint8_t keyCounter;
+    static bool ledState = false;
+    static bool lastStateON = false;
+    static bool lastStateOFF = false;
+    static uint8_t key = 0;
 
     switch (taskState)
     {
-        //Initialization of Vars
-        case TaskStates::INIT:
-        {
-            pinMode(ledBlink, OUTPUT);
-            digitalWrite(ledBlink, LOW);
-            lasTime = millis();
-            keyCounter = 0;
-            taskState = TaskStates::SLOW;
-            break;
-        }
+    case TaskStates::INIT:
+    {
+        pinMode(led, OUTPUT);
+        digitalWrite(led, LOW);
 
-        case TaskStates::SLOW:
-        {
-            uint32_t currentTime = millis();
+        taskState = TaskStates::LENTO;
 
-            if( (currentTime - lasTime) >= SlowInterval )
-            {
-                lasTime = currentTime;
-                digitalWrite(ledBlink,ledStatus);
-                ledStatus = !ledStatus;
-            }
+        break;
+    }
+    case TaskStates::LENTO:
+    {
+        uint32_t currentTime = millis();
+        if ((currentTime - lasTime) >= LentoINTERVAL){
 
-            if(buttonEvt.trigger == true)
+            lasTime = currentTime;
+            digitalWrite(led, ledState);
+            ledState = !ledState;
+            if (buttonEvt.trigger == true)
             {
                 buttonEvt.trigger = false;
-                if(buttonEvt.whichButton == BUTTONS::B1)
+                if (buttonEvt.whichButton == BUTTONS::B1)
                 {
-                    taskState = TaskStates::WAIT_OFF;
-                    printf("Change to Wait: %d\n");
+                    taskState = TaskStates::APAGADO;
                 }
-                if (buttonEvt.whichButton == BUTTONS::B2)
+                else if (buttonEvt.whichButton == BUTTONS::B2)
                 {
-                    keyCounter = 0;
-                    taskState = TaskStates::MEDIUM;
-                    printf("Change to Medium Mode: %d\n");
+
+                    taskState = TaskStates::MEDIO;
                 }
+
             }
-            break;
         }
+        break;
+    }
 
-        case TaskStates::WAIT_OFF:
-        {
-            uint32_t currentTime = millis();
-            if( (currentTime - lasTime) >= SlowInterval )
-            {
-                digitalWrite(ledBlink, LOW);
-                taskState = TaskStates::OFF_LED;
-                printf("Change to OFF_LED: %d\n");
-            }
-            break;
-        }
+    case TaskStates::MEDIO:
+    {
+        uint32_t currentTime = millis();
+        if ((currentTime - lasTime) >= MedioINTERVAL){
 
-        case TaskStates::MEDIUM:
-        {
-            uint32_t currentTime = millis();
-            if( (currentTime - lasTime) >= MediumInterval )
-            {
-                lasTime = currentTime;
-                digitalWrite(ledBlink,ledStatus);
-                ledStatus = !ledStatus;
-            }
-
-            if(buttonEvt.trigger == true)
+            lasTime = currentTime;
+            digitalWrite(led, ledState);
+            ledState = !ledState;
+            if (buttonEvt.trigger == true)
             {
                 buttonEvt.trigger = false;
-                if(buttonEvt.whichButton == BUTTONS::B1)
+                if (buttonEvt.whichButton == BUTTONS::B1)
                 {
-                    taskState = TaskStates::WAIT_ON;
-                    printf("Change to Wait: %d\n");
+                    taskState = TaskStates::ENCENDIDO;
                 }
-                if (buttonEvt.whichButton == BUTTONS::B2)
+                else if (buttonEvt.whichButton == BUTTONS::B2)
                 {
-                    keyCounter = 0;
-                    taskState = TaskStates::SLOW;
-                    printf("Change to Slow Mode: %d\n");
+                    taskState = TaskStates::LENTO;
                 }
+
             }
-            break;
+        }
+        break;
+
+    }
+
+    case TaskStates::RAPIDO:
+    {
+        uint32_t currentTime = millis();
+        if ((currentTime - lasTime) >= RapidoINTERVAL)
+        {
+
+            lasTime = currentTime;
+            digitalWrite(led, ledState);
+            ledState = !ledState;
+
         }
 
-        case TaskStates::WAIT_ON:
+        if (buttonEvt.trigger == true)
         {
-            uint32_t currentTime = millis();
-            if( (currentTime - lasTime) >= MediumInterval )
-            {
-                digitalWrite(ledBlink, HIGH);
-                taskState = TaskStates::ON_LED;
-                printf("Change to ON_LED: %d\n");
-            }
-            break;
-        }
-
-        //Fast Mode (Difficult task)
-        case TaskStates::FAST:
-        {
-            uint32_t currentTime = millis();
-            if( (currentTime - lasTime) >= FastInterval )
-            {
-                lasTime = currentTime;
-                digitalWrite(ledBlink,ledStatus);
-                ledStatus = !ledStatus;
-            }
-
-            if(buttonEvt.trigger == true)
-            {
                 buttonEvt.trigger = false;
-                disarmKey[keyCounter] = buttonEvt.whichButton;
-                keyCounter++;
-                if (keyCounter == 5)
+                RapidoKey[key] = buttonEvt.whichButton;
+                key++;
+
+                if (key == 5)
                 {
-                    keyCounter = 0;
-                    if (compareKeys(secret, disarmKey) == true)
+                    key = 0;
+                    if (compareKeys(SecretCodigoRapido, RapidoKey) == true)
                     {
-                        if(switchState == true)
+                        if (lastStateON == true)
                         {
-                            digitalWrite(ledBlink, HIGH);
-                            printf("Back to ON\n");
-                            taskState = TaskStates::ON_LED;
+                            taskState = TaskStates::ENCENDIDO;
                         }
-                        else if(switchState == false)
+                        else if (lastStateOFF == true)
                         {
-                            digitalWrite(ledBlink, LOW);
-                            printf("Back to OFF\n");
-                            taskState = TaskStates::OFF_LED;
+                            taskState = TaskStates::APAGADO;
                         }
                     }
                     else
                     {
-                        printf("Failed Password\n");
+                        Serial.print("TA MAL >:C");
                     }
                 }
-            }
-            break;
+
         }
 
-        //LED ON/OFF INIFNITE
-        case TaskStates::ON_LED:
+            break;
+    }
+
+    case TaskStates::APAGADO:
+    {
+        digitalWrite(led, ledState);
+
+        ledState = false;
+
+        if (buttonEvt.trigger == true)
         {
-            if(buttonEvt.trigger == true)
+            buttonEvt.trigger = false;
+            if (buttonEvt.whichButton == BUTTONS::B1)
             {
-                buttonEvt.trigger = false;
-                if(buttonEvt.whichButton == BUTTONS::B1)
-                {
-                    taskState = TaskStates::MEDIUM;
-                    printf("Change to Medium Mode: %d\n");
-                }
-                else if (buttonEvt.whichButton == BUTTONS::B2)
-                {
-                    switchState = true;
-                    keyCounter = 0;
-                    taskState = TaskStates::FAST;
-                    printf("Change to Fast Mode: %d\n");
-                    printf("Boolean: %d\n", switchState);
-                }
+                taskState = TaskStates::LENTO;
             }
-            break;
-        }
-
-        case TaskStates::OFF_LED:
-        {
-            if(buttonEvt.trigger == true)
+            else if (buttonEvt.whichButton == BUTTONS::B2)
             {
-                buttonEvt.trigger = false;
-                if(buttonEvt.whichButton == BUTTONS::B1)
-                {
-                    taskState = TaskStates::SLOW;
-                    printf("Change to Slow Mode: %d\n");
-                }
-                else if (buttonEvt.whichButton == BUTTONS::B2)
-                {
-                    switchState = false;
-                    keyCounter = 0;
-                    taskState = TaskStates::FAST;
-                    printf("Change to Fast Mode: %d\n");
-                    printf("Boolean: %d\n", switchState);
-                }
+                taskState = TaskStates::RAPIDO;
+                lastStateOFF = true;
+                lastStateON = false;
             }
-            break;
         }
+        break;
 
-        default:
+    }
+
+    case TaskStates::ENCENDIDO:
+    {
+        digitalWrite(led, ledState);
+        ledState = true;
+
+        if (buttonEvt.trigger == true)
         {
-            break;
+            buttonEvt.trigger = false;
+            if (buttonEvt.whichButton == BUTTONS::B1)
+            {
+                taskState = TaskStates::MEDIO;
+            }
+            else if (buttonEvt.whichButton == BUTTONS::B2)
+            {
+                taskState = TaskStates::RAPIDO;
+                lastStateON = true;
+                lastStateOFF = false;
+            }
         }
+        break;
+
+    }
+
+
+    default:
+    {
+        break;
+    }
     }
 }
