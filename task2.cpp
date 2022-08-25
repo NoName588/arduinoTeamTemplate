@@ -14,8 +14,8 @@ enum class TaskState
     static uint8_t lastButtonPressed;
     static uint32_t initStableTime;
 
-    const uint8_t U1_BTN = 32;
-    const uint8_t U2_BTN = 33;
+    const uint8_t B1 = 32;
+    const uint8_t B2 = 33;
 
     const uint32_t STABLE_TIME = 100;
 
@@ -23,21 +23,21 @@ enum class TaskState
     {
     case TaskState::INIT:
     {
-        pinMode(U1_BTN, INPUT_PULLUP);
-        pinMode(U2_BTN, INPUT_PULLUP);
+        pinMode(B1, INPUT_PULLUP);
+        pinMode(B2, INPUT_PULLUP);
 
         taskState = TaskState::WAIT_PRESS;
         break;
     }
     case TaskState::WAIT_PRESS:
     {
-        if(digitalRead(U1_BTN) == LOW){
-            lastButtonPressed =U1_BTN;
+        if(digitalRead(B1) == LOW){
+            lastButtonPressed =B1;
             initStableTime = millis();
             taskState = TaskState::WAIT_STABLE;
         }
-        if(digitalRead(U2_BTN) == LOW){
-            lastButtonPressed = U2_BTN;
+        if(digitalRead(B2) == LOW){
+            lastButtonPressed = B2;
             initStableTime = millis();
             taskState = TaskState::WAIT_STABLE;
         }
@@ -50,8 +50,8 @@ enum class TaskState
             taskState = TaskState::WAIT_PRESS;
         }
         else if ( (millis() - initStableTime) > STABLE_TIME){
-            if(lastButtonPressed ==U1_BTN) buttonEvt.whichButton = BUTTONS::U1_BTN;
-            else if(lastButtonPressed == U2_BTN) buttonEvt.whichButton = BUTTONS::U2_BTN;
+            if(lastButtonPressed ==B1) buttonEvt.whichButton = BUTTONS::B1;
+            else if(lastButtonPressed == B2) buttonEvt.whichButton = BUTTONS::B2;
 
             buttonEvt.trigger = true;
             printf("Button pressed: %d\n", lastButtonPressed);

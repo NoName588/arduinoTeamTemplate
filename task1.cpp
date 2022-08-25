@@ -26,15 +26,15 @@ void task1(){
             int dataRx = Serial.read();
             if (dataRx == '1')
             {
-                Serial.print("U1 BTN\n");
+                Serial.print("B1\n");
                 buttonEvt.trigger = true;
-                buttonEvt.whichButton = BUTTONS::U1_BTN;
+                buttonEvt.whichButton = BUTTONS::B1;
             }
             if (dataRx == '2')
             {
-                Serial.print("U2 BTN\n");
+                Serial.print("B2\n");
                 buttonEvt.trigger = true;
-                buttonEvt.whichButton = BUTTONS::U2_BTN;
+                buttonEvt.whichButton = BUTTONS::B1;
             }
         }
         break;

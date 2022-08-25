@@ -2,7 +2,7 @@
 #include "task3.h"
 #include "events.h"
 
-static bool compareKeys(BUTTONS *pSecret, BUTTONS *pKey)
+static bool compareKeys(BUTTONS *pKey, BUTTONS *pSecret)
 {
     bool correct = true;
     for (uint8_t i = 0; i < 5; i++)
@@ -31,18 +31,22 @@ void task3()
     };
 
     static TaskStates taskState = TaskStates::INIT;
+
     const uint8_t ledBlink = 25;
+
     static uint32_t lasTime;
+
     static bool ledStatus = false;
+
     const uint32_t SlowInterval = 1000;
-    const uint32_t MediumInterval = 500U;
-    const uint32_t FastInterval = 250U;
+
+    const uint32_t MediumInterval = 500;
+
+    const uint32_t FastInterval = 250;
     static bool switchState;
 
     //Password Var
-    static BUTTONS secret[5] = {BUTTONS::U1_BTN, BUTTONS::U1_BTN,
-                                BUTTONS::U2_BTN, BUTTONS::U2_BTN,
-                                BUTTONS::U1_BTN};
+    static BUTTONS secret[5] = {BUTTONS::B1, BUTTONS::B1, BUTTONS::B2, BUTTONS::B2, BUTTONS::B1};
 
     static BUTTONS disarmKey[5] = {BUTTONS::NONE};
     static uint8_t keyCounter;
@@ -75,12 +79,12 @@ void task3()
             if(buttonEvt.trigger == true)
             {
                 buttonEvt.trigger = false;
-                if(buttonEvt.whichButton == BUTTONS::U1_BTN)
+                if(buttonEvt.whichButton == BUTTONS::B1)
                 {
                     taskState = TaskStates::WAIT_OFF;
                     printf("Change to Wait: %d\n");
                 }
-                if (buttonEvt.whichButton == BUTTONS::U2_BTN)
+                if (buttonEvt.whichButton == BUTTONS::B2)
                 {
                     keyCounter = 0;
                     taskState = TaskStates::MEDIUM;
@@ -115,12 +119,12 @@ void task3()
             if(buttonEvt.trigger == true)
             {
                 buttonEvt.trigger = false;
-                if(buttonEvt.whichButton == BUTTONS::U1_BTN)
+                if(buttonEvt.whichButton == BUTTONS::B1)
                 {
                     taskState = TaskStates::WAIT_ON;
                     printf("Change to Wait: %d\n");
                 }
-                if (buttonEvt.whichButton == BUTTONS::U2_BTN)
+                if (buttonEvt.whichButton == BUTTONS::B2)
                 {
                     keyCounter = 0;
                     taskState = TaskStates::SLOW;
@@ -191,12 +195,12 @@ void task3()
             if(buttonEvt.trigger == true)
             {
                 buttonEvt.trigger = false;
-                if(buttonEvt.whichButton == BUTTONS::U1_BTN)
+                if(buttonEvt.whichButton == BUTTONS::B1)
                 {
                     taskState = TaskStates::MEDIUM;
                     printf("Change to Medium Mode: %d\n");
                 }
-                else if (buttonEvt.whichButton == BUTTONS::U2_BTN)
+                else if (buttonEvt.whichButton == BUTTONS::B2)
                 {
                     switchState = true;
                     keyCounter = 0;
@@ -213,12 +217,12 @@ void task3()
             if(buttonEvt.trigger == true)
             {
                 buttonEvt.trigger = false;
-                if(buttonEvt.whichButton == BUTTONS::U1_BTN)
+                if(buttonEvt.whichButton == BUTTONS::B1)
                 {
                     taskState = TaskStates::SLOW;
                     printf("Change to Slow Mode: %d\n");
                 }
-                else if (buttonEvt.whichButton == BUTTONS::U2_BTN)
+                else if (buttonEvt.whichButton == BUTTONS::B2)
                 {
                     switchState = false;
                     keyCounter = 0;
