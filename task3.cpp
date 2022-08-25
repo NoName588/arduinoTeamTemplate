@@ -22,25 +22,27 @@ void task3()
     enum class TaskStates
     {
         INIT,
+        SLOW,
+        MID,
+        FAST,
         WAIT_CONFIG,
-        APAGADO,
-        ENCENDIDO,
-        LENTO,
-        MEDIO,
-        RAPIDO,
+        OFF,
+        ON,
+
 
     };
     static TaskStates taskState = TaskStates::INIT;
     const uint8_t led = 14;
+
+    static constexpr uint32_t Lento_vel = 1000;
+
+    static constexpr uint32_t Medio_vel = 500;
+
+    static constexpr uint32_t Rapido_vel = 125;
     static uint32_t lasTime;
-    static constexpr uint32_t LentoINTERVAL = 1000;
-    static constexpr uint32_t MedioINTERVAL = 500;
-    static constexpr uint32_t RapidoINTERVAL = 125;
 
 
-    static BUTTONS SecretCodigoRapido[5] = {BUTTONS::B1, BUTTONS::B1,
-                                                    BUTTONS::B2, BUTTONS::B2,
-                                                    BUTTONS::B1};
+    static BUTTONS SecretCodigoRapido[5] = {BUTTONS::B1, BUTTONS::B1, BUTTONS::B2, BUTTONS::B2, BUTTONS::B1};
 
     static BUTTONS RapidoKey[5] = {BUTTONS::NONE};
 
@@ -56,14 +58,14 @@ void task3()
         pinMode(led, OUTPUT);
         digitalWrite(led, LOW);
 
-        taskState = TaskStates::LENTO;
+        taskState = TaskStates::SLOW;
 
         break;
     }
-    case TaskStates::LENTO:
+    case TaskStates::SLOW:
     {
         uint32_t currentTime = millis();
-        if ((currentTime - lasTime) >= LentoINTERVAL){
+        if ((currentTime - lasTime) >= Lento_vel){
 
             lasTime = currentTime;
             digitalWrite(led, ledState);
@@ -73,12 +75,12 @@ void task3()
                 buttonEvt.trigger = false;
                 if (buttonEvt.whichButton == BUTTONS::B1)
                 {
-                    taskState = TaskStates::APAGADO;
+                    taskState = TaskStates::OFF;
                 }
                 else if (buttonEvt.whichButton == BUTTONS::B2)
                 {
 
-                    taskState = TaskStates::MEDIO;
+                    taskState = TaskStates::MID;
                 }
 
             }
@@ -86,10 +88,10 @@ void task3()
         break;
     }
 
-    case TaskStates::MEDIO:
+    case TaskStates::MID:
     {
         uint32_t currentTime = millis();
-        if ((currentTime - lasTime) >= MedioINTERVAL){
+        if ((currentTime - lasTime) >= Medio_vel){
 
             lasTime = currentTime;
             digitalWrite(led, ledState);
@@ -99,11 +101,11 @@ void task3()
                 buttonEvt.trigger = false;
                 if (buttonEvt.whichButton == BUTTONS::B1)
                 {
-                    taskState = TaskStates::ENCENDIDO;
+                    taskState = TaskStates::ON;
                 }
                 else if (buttonEvt.whichButton == BUTTONS::B2)
                 {
-                    taskState = TaskStates::LENTO;
+                    taskState = TaskStates::SLOW;
                 }
 
             }
@@ -112,10 +114,10 @@ void task3()
 
     }
 
-    case TaskStates::RAPIDO:
+    case TaskStates::FAST:
     {
         uint32_t currentTime = millis();
-        if ((currentTime - lasTime) >= RapidoINTERVAL)
+        if ((currentTime - lasTime) >= Rapido_vel)
         {
 
             lasTime = currentTime;
@@ -137,11 +139,11 @@ void task3()
                     {
                         if (lastStateON == true)
                         {
-                            taskState = TaskStates::ENCENDIDO;
+                            taskState = TaskStates::ON;
                         }
                         else if (lastStateOFF == true)
                         {
-                            taskState = TaskStates::APAGADO;
+                            taskState = TaskStates::OFF;
                         }
                     }
                     else
@@ -155,7 +157,7 @@ void task3()
             break;
     }
 
-    case TaskStates::APAGADO:
+    case TaskStates::OFF:
     {
         digitalWrite(led, ledState);
 
@@ -166,11 +168,11 @@ void task3()
             buttonEvt.trigger = false;
             if (buttonEvt.whichButton == BUTTONS::B1)
             {
-                taskState = TaskStates::LENTO;
+                taskState = TaskStates::SLOW;
             }
             else if (buttonEvt.whichButton == BUTTONS::B2)
             {
-                taskState = TaskStates::RAPIDO;
+                taskState = TaskStates::FAST;
                 lastStateOFF = true;
                 lastStateON = false;
             }
@@ -179,7 +181,7 @@ void task3()
 
     }
 
-    case TaskStates::ENCENDIDO:
+    case TaskStates::ON:
     {
         digitalWrite(led, ledState);
         ledState = true;
@@ -189,11 +191,11 @@ void task3()
             buttonEvt.trigger = false;
             if (buttonEvt.whichButton == BUTTONS::B1)
             {
-                taskState = TaskStates::MEDIO;
+                taskState = TaskStates::MID;
             }
             else if (buttonEvt.whichButton == BUTTONS::B2)
             {
-                taskState = TaskStates::RAPIDO;
+                taskState = TaskStates::FAST;
                 lastStateON = true;
                 lastStateOFF = false;
             }

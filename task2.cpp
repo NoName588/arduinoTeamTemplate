@@ -14,7 +14,7 @@ enum class TaskState
     static uint8_t lastButtonPressed;
     static uint32_t initStableTime;
 
-    const uint8_t B1 = 32;
+    const uint8_t B1 = 25;
     const uint8_t B2 = 33;
 
     const uint32_t STABLE_TIME = 100;
